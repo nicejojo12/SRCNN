@@ -6,7 +6,7 @@ using namespace std;
 int main(int argc, char** argv) {
 	for (int examples = 0; examples < 10; examples++) {
 		DataGenerator dataGenerator;
-		dataGenerator.setError(0.0001);
+		dataGenerator.setError(0.000000001);
 		dataGenerator.setEnergyBandCoefficient(.2);
 		dataGenerator.setSelfEnergyCoefficient(.07);
 		dataGenerator.setMinEnergy(10);

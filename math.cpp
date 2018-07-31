@@ -8,6 +8,7 @@
 using namespace std;
 
 class Math {
+	// Have a single random generator used over and over so that we don't always get the same result
 	static default_random_engine* sGenerator;
 public:
 	static default_random_engine* getGenerator() {

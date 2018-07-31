@@ -157,6 +157,10 @@ public:
 		}
 	}
 
+	// In the case of a 1-layer grid, print it as a 6-color heatmap
+	// Each color has a domain of 1/6, and only values from 0 to 1 make sense here
+	// Any value greater than 1 is automatically 1
+	// Any value less than 0 is automatically 0
 	void printHeatmap() {
 		assert(1 == kLayers);
 		cout << "Key: low intensity ";

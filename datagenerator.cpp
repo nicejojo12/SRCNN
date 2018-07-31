@@ -108,29 +108,26 @@ class DataGenerator {
 	}
 
 public:
+	// This is the main function for generating training data
+	// The idealOutput will be the same every run (unless you change parameters)
+	// The input will be blurred and 12 more pixels in each direction
 	pair<Grid, Grid> createTrainingExample() {
 		// Returns <input, idealOutput>
 
+		// Figure out how large to make the kernal for the gaussian noise
+		// In theory, this should be infinity by infinity
+		// However, as an optimization, just use the smallest square with nothing above mError
 		const int gaussianGridSize = getGaussianGridSize();
 
-		Grid idealFullSizeImage = createIdealImage(0);
-		const double lower = idealFullSizeImage.getMin();
-		const double upper = idealFullSizeImage.getMax();
-		normalizeGrid(lower, upper, &idealFullSizeImage);
-
-		// cout << "idealFullSizeImage:" << endl;
-		// idealFullSizeImage.printHeatmap();
-
-		// Make a larger grid than needed
+		// Make a larger grid than needed because the gaussian noise is going to make it smaller
 		Grid enlargedGrid = createIdealImage(gaussianGridSize / 2);
 
+		// Because intensities can be basically anything, normalize them to the 0-to-1 range
+		const double lower = enlargedGrid.getMin();
+		const double upper = enlargedGrid.getMax();
 		normalizeGrid(lower, upper, &enlargedGrid);
 
-		// cout << "enlargedGrid: (min = " << enlargedGrid.getMin() <<
-		// 	", max = " << enlargedGrid.getMax() << endl;
-		// enlargedGrid.printHeatmap();
-
-		// Add poisson noise
+		// Add poisson noise, generating a new noise number for each pixel
 		Grid noisyEnlargedGrid(enlargedGrid);
 		for (int i = 0; i < noisyEnlargedGrid.getWidth(); i++) {
 			for (int j = 0; j < noisyEnlargedGrid.getHeight(); j++) {
@@ -138,9 +135,6 @@ public:
 				noisyEnlargedGrid.set(loc, noisyEnlargedGrid.get(loc) + Math::poisson(mLambda));
 			}
 		}
-
-		// cout << "noisyEnlargedGrid:" << endl;
-		// noisyEnlargedGrid.printHeatmap();
 
 		// Spread it out with a gaussian
 		const Filter gaussianFilter(createGaussianNoise(gaussianGridSize));
