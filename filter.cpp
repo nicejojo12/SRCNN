@@ -7,14 +7,6 @@
 // If the inputLayers is 1, then it takes the image as input
 // If outputLayers is 1, then it is generating the final image
 class Filter {
-	static float r() {
-		float result = float(rand() % 9 - 4) / float (rand() % 9 + 1);
-		while (1 < (rand() % 3)) {
-			result /= 2;
-		}
-		return result;
-	}
-
 	const uint32 kOutputLayers, kSize, kInputLayers;
 	float* mCoef;
 	float* mBias;
@@ -48,8 +40,8 @@ public:
 		mCoef = new float[size()];
 		mBias = new float[size()];
 		for (int i = 0; i < size(); i++) {
-			mCoef[i] = r();
-			mBias[i] = r()/100;
+			mCoef[i] = Math::normalDistribution();
+			mBias[i] = Math::normalDistribution()/100;
 		}
 	}
 
@@ -58,6 +50,20 @@ public:
 		mCoef = new float[size()];
 		mBias = new float[size()];
 		*this = rhs;
+	}
+
+	Filter(const Grid& grid)
+		: kOutputLayers(1), kSize(grid.getWidth()), kInputLayers(1) {
+		const uint32 N = grid.getWidth();
+		assert(N == grid.getHeight());
+		mCoef = new float[size()];
+		mBias = new float[size()];
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < N; j++) {
+				mCoef[i*N+j] = grid.get(Location(i, j));
+				mBias[i*N+j] = 0;
+			}
+		}
 	}
 
 	~Filter() {
@@ -101,9 +107,9 @@ public:
 
 	void mutate() {
 		if (0 == rand() % 2) {
-			mCoef[rand()%size()] += r();
+			mCoef[rand()%size()] += Math::normalDistribution();
 		} else {
-			mBias[rand()%size()] += r()/100;
+			mBias[rand()%size()] += Math::normalDistribution()/100;
 		}
 	}
 
@@ -120,16 +126,16 @@ public:
 		for (uint32 srcCol = col; srcCol < col + kSize; srcCol++) {
 			for (uint32 srcRow = row; srcRow < row + kSize; srcRow++) {
 				for (uint32 srcLayer = 0; srcLayer < input.getLayers(); srcLayer++) {
-					const float srcCoef = input.getC(Location(srcCol, srcRow, srcLayer));
-					const float srcBias = input.getB(Location(srcCol, srcRow, srcLayer));
+					const float srcCoef = input.get(Location(srcCol, srcRow, srcLayer));
 					const uint32 index = getIndex(
 						layer, srcCol - col, srcRow - row, srcLayer);
 					const float kernelValue = getC(index);
-					result += srcCoef * kernelValue + srcBias;
+					const float bias = getB(index);
+					result += srcCoef * kernelValue + bias;
 				}
 			}
 		}
-		output->setC(Location(col, row, layer), result);
+		output->set(Location(col, row, layer), result);
 	}
 
 	// Loop over every pixel of the output and assign the correct propagated value
