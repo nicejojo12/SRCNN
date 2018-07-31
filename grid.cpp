@@ -1,13 +1,14 @@
 #include <cassert>
 
 #include "basictypes.h"
+#include "math.h"
 
 using namespace std;
 
 struct Location {
 	const uint32 col, row, layer;
 
-	Location(const uint32 yCol, const uint32 yRow, const uint32 yLayer) 
+	Location(const uint32 yCol, const uint32 yRow, const uint32 yLayer = 0)
 		: col(yCol), row(yRow), layer(yLayer) {}
 };
 
@@ -80,7 +81,7 @@ public:
 	}
 
 	void mutate() {
-		mData[rand()%size()] += r();
+		mData[rand()%size()] += Math::normalDistribution();
 	}
 
 	void set(const Location& loc, const float value) {
@@ -127,6 +128,22 @@ public:
 		return kLayers;
 	}
 
+	float getMax() const {
+		float result = get(0);
+		for (uint32 i = 0; i < size(); i++) {
+			result = max(result, get(i));
+		}
+		return result;
+	}
+
+	float getMin() const {
+		float result = get(0);
+		for (uint32 i = 0; i < size(); i++) {
+			result = min(result, get(i));
+		}
+		return result;
+	}
+
 	void print() const {
 		for (uint32 layer = 0; layer < kLayers; layer++) {
 			cout << "Layer " << layer << ":" << endl;
@@ -138,5 +155,24 @@ public:
 			}
 			cout << endl;
 		}
+	}
+
+	void printHeatmap() {
+		assert(1 == kLayers);
+		cout << "Key: low intensity ";
+		int key[6] = {47, 46, 42, 43, 41, 40};
+		for (int i = 0; i < 6; i++) {
+			cout << "\033[" << key[i] << "m \033[0m";
+		}
+		cout << " high intensity" << endl;
+		for (int i = 0; i < kHeight; i++) {
+			for (int j = 0; j < kWidth; j++) {
+				const float value = get(Location(i, j));
+				const int index = max(0, min(5, int(value*6)));
+				cout << "\033[" << key[index] << "m  \033[0m";
+			}
+			cout << "\n";
+		}
+		cout << endl;
 	}
 };
