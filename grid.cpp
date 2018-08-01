@@ -161,7 +161,7 @@ public:
 	// Each color has a domain of 1/6, and only values from 0 to 1 make sense here
 	// Any value greater than 1 is automatically 1
 	// Any value less than 0 is automatically 0
-	void printHeatmap() {
+	void printHeatmap() const {
 		assert(1 == kLayers);
 		cout << "Key: low intensity ";
 		int key[6] = {47, 46, 42, 43, 41, 40};
