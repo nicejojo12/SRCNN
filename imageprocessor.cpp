@@ -10,9 +10,40 @@ public:
 		mInput = new Filter(64, 9, 1);
 		mFirst = new Filter(32, 1, 64);
 		mSecond = new Filter(1, 5, 32);
+		assert(mInput->size());
+		assert(mFirst->size());
+		assert(mSecond->size());
+	}
+
+	void verifyItsNotTotallyBroken() {
+		assert(mInput->size());
+		assert(mFirst->size());
+		assert(mSecond->size());
 	}
 
 	ImageProcessor(const ImageProcessor& rhs) {
+		assert(rhs.mInput != NULL);
+		assert(rhs.mFirst != NULL);
+		assert(rhs.mSecond != NULL);
+		assert(rhs.mInput->size());
+		assert(rhs.mFirst->size());
+		assert(rhs.mSecond->size());
+		mInput = new Filter(*(rhs.mInput));
+		mFirst = new Filter(*(rhs.mFirst));
+		mSecond = new Filter(*(rhs.mSecond));
+	}
+
+	// TODO: don't use copyFrom, this should work with a copy constructor and assignment operator
+	void copyFrom(const ImageProcessor& rhs) {
+		if (mInput == NULL) delete mInput;
+		if (mFirst == NULL) delete mFirst;
+		if (mSecond == NULL) delete mSecond;
+		assert(rhs.mInput != NULL);
+		assert(rhs.mFirst != NULL);
+		assert(rhs.mSecond != NULL);
+		assert(rhs.mInput->size());
+		assert(rhs.mFirst->size());
+		assert(rhs.mSecond->size());
 		mInput = new Filter(*(rhs.mInput));
 		mFirst = new Filter(*(rhs.mFirst));
 		mSecond = new Filter(*(rhs.mSecond));
@@ -32,7 +63,7 @@ public:
 		}
 	}
 
-	void process(const Grid& inputImage, Grid* outputImage) {
+	void process(const Grid& inputImage, Grid* outputImage) const {
 		assert(1 == inputImage.getLayers());
 		assert(1 == outputImage->getLayers());
 		assert(12 + outputImage->getWidth() == inputImage.getWidth());
@@ -49,18 +80,15 @@ public:
 		}
 	}
 
-	float error(const Grid& correctImage, const Grid& noisyImage) {
+	float error(const Grid& correctImage, const Grid& noisyImage) const {
 		Grid imageGuess = correctImage;
-		process(noisyImage, &correctImage);
-		assert(correctImage.size() == noisyImage.size());
+		process(noisyImage, &imageGuess);
+		assert(correctImage.size() == imageGuess.size());
 		float result = 0;
 		for (int i = 0; i < correctImage.size(); i++) {
-			if (correctImage.get(i) > 0.5) { // It is 1
-				result += log(noisyImage.get(i));
-			} else { // It is 0
-				result += log(1-noisyImage.get(i));
-			}
+			result +=      correctImage.get(i)  * log(    imageGuess.get(i));
+			result += (1 - correctImage.get(i)) * log(1 - imageGuess.get(i));
 		}
 		return -result / correctImage.size();
 	}
-}
+};
