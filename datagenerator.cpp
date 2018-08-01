@@ -112,12 +112,13 @@ public:
 	// The idealOutput will be the same every run (unless you change parameters)
 	// The input will be blurred and 12 more pixels in each direction
 	pair<Grid, Grid> createTrainingExample() {
-		// Returns <input, idealOutput>
+		// Returns <idealOutput, input>
 
 		// Figure out how large to make the kernal for the gaussian noise
 		// In theory, this should be infinity by infinity
 		// However, as an optimization, just use the smallest square with nothing above mError
 		const int gaussianGridSize = getGaussianGridSize();
+		// cout << "gaussianGridSize = " << gaussianGridSize << endl;
 
 		// Make a larger grid than needed because the gaussian noise is going to make it smaller
 		Grid enlargedGrid = createIdealImage(gaussianGridSize / 2);
@@ -147,7 +148,7 @@ public:
 		Grid idealImage = createIdealImage(-6);
 		normalizeGrid(lower, upper, &idealImage);
 
-		return make_pair(noisyImage, idealImage);
+		return make_pair(idealImage, noisyImage);
 	}
 
 	double getError() const {
