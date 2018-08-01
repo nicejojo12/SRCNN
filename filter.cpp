@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <vector>
 
 #include "basictypes.h"
 #include "grid.h"
@@ -8,8 +9,8 @@
 // If outputLayers is 1, then it is generating the final image
 class Filter {
 	const uint32 kOutputLayers, kSize, kInputLayers;
-	float* mCoef;
-	float* mBias;
+	vector<float> mCoef;
+	vector<float> mBias;
 
 	uint32 getIndex(
 		const uint32 outputLayer,
@@ -32,13 +33,19 @@ class Filter {
 public:
 	Filter()
 		: kOutputLayers(0), kSize(0), kInputLayers(0) {
+		assert(kOutputLayers);
+		assert(kSize);
+		assert(kInputLayers);
 		assert(0);
 	}
 
 	Filter(const uint32 outputLayers, const uint32 windowSize, const uint32 inputLayers)
 		: kOutputLayers(outputLayers), kSize(windowSize), kInputLayers(inputLayers) {
-		mCoef = new float[size()];
-		mBias = new float[size()];
+		assert(kOutputLayers);
+		assert(kSize);
+		assert(kInputLayers);
+		mCoef.resize(size());
+		mBias.resize(size());
 		for (int i = 0; i < size(); i++) {
 			mCoef[i] = Math::normalDistribution();
 			mBias[i] = Math::normalDistribution()/100;
@@ -47,17 +54,23 @@ public:
 
 	Filter(const Filter& rhs)
 		: kOutputLayers(rhs.kOutputLayers), kSize(rhs.kSize), kInputLayers(rhs.kInputLayers) {
-		mCoef = new float[size()];
-		mBias = new float[size()];
+		assert(kOutputLayers);
+		assert(kSize);
+		assert(kInputLayers);
+		mCoef.resize(size());
+		mBias.resize(size());
 		*this = rhs;
 	}
 
 	Filter(const Grid& grid)
 		: kOutputLayers(1), kSize(grid.getWidth()), kInputLayers(1) {
+		assert(kOutputLayers);
+		assert(kSize);
+		assert(kInputLayers);
 		const uint32 N = grid.getWidth();
 		assert(N == grid.getHeight());
-		mCoef = new float[size()];
-		mBias = new float[size()];
+		mCoef.resize(size());
+		mBias.resize(size());
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < N; j++) {
 				mCoef[i*N+j] = grid.get(Location(i, j));
@@ -66,14 +79,16 @@ public:
 		}
 	}
 
-	~Filter() {
-		delete mCoef;
-	}
+	// ~Filter() {
+	// 	delete mCoef;
+	// 	delete mBias;
+	// }
 
 	Filter& operator= (const Filter& rhs) {
 		assert(kOutputLayers == rhs.kOutputLayers);
 		assert(kSize == rhs.kSize);
 		assert(kInputLayers == rhs.kInputLayers);
+		assert(size() == rhs.size());
 		for (uint32 i = 0; i < size(); i++) {
 			setC(i, rhs.getC(i));
 			setB(i, rhs.getB(i));
@@ -106,10 +121,22 @@ public:
 	}
 
 	void mutate() {
+		const uint32 theSize = size();
+		if (0 == theSize) {
+			cout << "kOutputLayers = " << kOutputLayers << endl;
+			cout << "kSize = " << kSize << endl;
+		}
+		assert(theSize);
+		const uint64 randNum = rand();
+		const uint64 index = randNum % theSize;
+		assert(index < size());
+		assert(mCoef.size() == size());
+		assert(mBias.size() == size());
+		const double adjustment = Math::normalDistribution();
 		if (0 == rand() % 2) {
-			mCoef[rand()%size()] += Math::normalDistribution();
+			mCoef[index] += adjustment;
 		} else {
-			mBias[rand()%size()] += Math::normalDistribution()/100;
+			mBias[index] += adjustment/100;
 		}
 	}
 
