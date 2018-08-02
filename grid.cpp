@@ -16,7 +16,7 @@ class Grid {
 
 	// Define variables
 	const uint32 kWidth, kHeight, kLayers;
-	float* mData;
+	float* mData; // TODO: maybe use a vector here
 
 	uint32 getIndex(const Location& loc) const {
 		if (loc.col < kWidth && loc.row < kHeight && loc.layer < kLayers) {
@@ -93,7 +93,11 @@ public:
 		if (index < size()) {
 			mData[index] = value;
 		}
-		assert(value == get(index));
+		if (!(value == get(index))) {
+			cout << "value = " << value << endl;
+			cout << "saved: " << get(index) << endl;
+			assert(value == get(index));
+		}
 	}
 
 	float get(const Location& loc) const {

@@ -58,6 +58,7 @@ class DataGenerator {
 	Grid createGaussianNoise(const int gaussianGridSize) {
 		Grid gaussianNoise(gaussianGridSize, gaussianGridSize);
 		const int median = gaussianGridSize / 2;
+		float total = 0;
 		for (int x = 0; x < gaussianGridSize; x++) {
 			for (int y = 0; y < gaussianGridSize; y++) {
 				const double zFromX = (mMaxMomentum - mMinMomentum)
@@ -65,7 +66,15 @@ class DataGenerator {
 				const double zFromY = (mMaxEnergy - mMinEnergy)
 					* double(y - median) / double(mHeight) / mSigmaY;
 				const double z = sqrt(zFromX * zFromX + zFromY * zFromY);
-				gaussianNoise.set(Location(x, y), Math::normalPDF(z));
+				Location loc(x, y);
+				gaussianNoise.set(loc, Math::normalPDF(z));
+				total += gaussianNoise.get(loc);
+			}
+		}
+		for (int x = 0; x < gaussianGridSize; x++) {
+			for (int y = 0; y < gaussianGridSize; y++) {
+				Location loc(x, y);
+				gaussianNoise.set(loc, gaussianNoise.get(loc) / total);
 			}
 		}
 		return gaussianNoise;
@@ -151,7 +160,6 @@ public:
 		assert(0.0 <= idealImage.getMin());
 		assert(0.0 <= noisyImage.getMin());
 		assert(idealImage.getMax() <= 1.0);
-		assert(noisyImage.getMax() <= 1.0);
 
 		return make_pair(idealImage, noisyImage);
 	}

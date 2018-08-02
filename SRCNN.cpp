@@ -24,8 +24,8 @@ int main(int argc, char** argv) {
 	dataGenerator.setLambda(.1);
 	dataGenerator.setSigmaX(.02);
 	dataGenerator.setSigmaY(.03);
-	dataGenerator.setWidth(25);
-	dataGenerator.setHeight(25);
+	dataGenerator.setWidth(50);
+	dataGenerator.setHeight(50);
 
 	vector <pair<Grid, Grid> > trainingExamples;
 	for (int examples = 0; examples < 10; examples++) {

@@ -28,7 +28,7 @@ class Filter {
 		result += kInputLayers * col;
 		result += inputLayer;
 		return result;
-	} 
+	}
 
 public:
 	Filter()
