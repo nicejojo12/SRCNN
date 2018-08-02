@@ -55,18 +55,6 @@ class DataGenerator {
 		return selfEnergy / denominator;
 	}
 
-	// Determine the size of the gaussian kernel used to add noise
-	uint32 getGaussianGridSize() const {
-		const double zChangePerX = (mMaxMomentum - mMinMomentum) / mWidth / mSigmaX;
-		const double zChangePerY = (mMaxEnergy - mMinEnergy) / mHeight / mSigmaY;
-		const double zChange = min(zChangePerX, zChangePerY);
-		uint32 stepsNeeded = 0;
-		while (mError < Math::normalPDF(double(stepsNeeded) * zChange)) {
-			stepsNeeded++;
-		}
-		return 1 + stepsNeeded * 2;
-	}
-
 	Grid createGaussianNoise(const int gaussianGridSize) {
 		Grid gaussianNoise(gaussianGridSize, gaussianGridSize);
 		const int median = gaussianGridSize / 2;
@@ -108,6 +96,18 @@ class DataGenerator {
 	}
 
 public:
+	// Determine the size of the gaussian kernel used to add noise
+	uint32 getGaussianGridSize() const {
+		const double zChangePerX = (mMaxMomentum - mMinMomentum) / mWidth / mSigmaX;
+		const double zChangePerY = (mMaxEnergy - mMinEnergy) / mHeight / mSigmaY;
+		const double zChange = min(zChangePerX, zChangePerY);
+		uint32 stepsNeeded = 0;
+		while (mError < Math::normalPDF(double(stepsNeeded) * zChange)) {
+			stepsNeeded++;
+		}
+		return 1 + stepsNeeded * 2;
+	}
+
 	// This is the main function for generating training data
 	// The idealOutput will be the same every run (unless you change parameters)
 	// The input will be blurred and 12 more pixels in each direction
@@ -147,6 +147,11 @@ public:
 		//	It might be good to define some constants for this
 		Grid idealImage = createIdealImage(-6);
 		normalizeGrid(lower, upper, &idealImage);
+
+		assert(0.0 <= idealImage.getMin());
+		assert(0.0 <= noisyImage.getMin());
+		assert(idealImage.getMax() <= 1.0);
+		assert(noisyImage.getMax() <= 1.0);
 
 		return make_pair(idealImage, noisyImage);
 	}
