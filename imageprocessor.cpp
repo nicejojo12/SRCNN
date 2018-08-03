@@ -1,4 +1,7 @@
+#include <fstream>
 #include <math.h>
+
+const string imageProcessorFilename = "savedProcessor";
 
 class ImageProcessor {
 	Filter* mFilter;
@@ -10,6 +13,40 @@ public:
 
 	Filter* getFilter() {
 		return mFilter;
+	}
+
+	void save() {
+		ofstream file;
+		file.open(imageProcessorFilename);
+		char line[sizeof(float)];
+		for (int i = 0; i < mFilter->size(); i++) {
+			const float coeff = mFilter->getC(i);
+			memcpy(line, &coeff, sizeof(float));
+			file.write(line, sizeof(float));
+
+			const float bias = mFilter->getB(i);
+			memcpy(line, &bias, sizeof(float));
+			file.write(line, sizeof(float));
+		}
+		file.close();
+	}
+
+	void load() {
+		ifstream file;
+		file.open(imageProcessorFilename);
+		char line[sizeof(float)];
+		for (int i = 0; i < mFilter->size(); i++) {
+			file.read(line, sizeof(float));
+			float coeff = 0;
+			memcpy(&coeff, line, sizeof(float));
+			mFilter->setC(i, coeff);
+
+			file.read(line, sizeof(float));
+			float bias = 0;
+			memcpy(&bias, line, sizeof(float));
+			mFilter->setB(i, bias);
+		}
+		file.close();
 	}
 
 	void verifyItsNotTotallyBroken() {
@@ -24,7 +61,7 @@ public:
 
 	// TODO: don't use copyFrom, this should work with a copy constructor and assignment operator
 	void copyFrom(const ImageProcessor& rhs) {
-		if (mFilter == NULL) delete mFilter;
+		if (mFilter != NULL) delete mFilter;
 		assert(rhs.mFilter != NULL);
 		assert(rhs.mFilter->size());
 		mFilter = new Filter(*(rhs.mFilter));

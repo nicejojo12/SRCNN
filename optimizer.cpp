@@ -24,6 +24,7 @@ class Optimizer {
 				attemptAtCorrectImage.printHeatmap();
 				cout << "Failures = " << failures << endl;
 				cout << "Error = " << error << endl;
+				climber->save();
 			}
 			if (error > newError) {
 				error = newError;
@@ -42,7 +43,7 @@ class Optimizer {
 		climber->verifyItsNotTotallyBroken();
 		assert(climber != NULL);
 		float error = getError(data, *climber);
-		for (int failures = 0; failures < 500; failures++) {
+		for (int failures = 0; failures < 5; failures++) {
 			climber->verifyItsNotTotallyBroken();
 			for (int i = 0; i < climber->getFilter()->size(); i++) {
 				float stepSize = 1.0;
@@ -95,6 +96,18 @@ class Optimizer {
 					if (!improvement) {
 						stepSize /= 4;
 					} else {
+						cout << "Blurry Image:" << endl;
+						data[0].second.printHeatmap();
+						cout << "Correct Image:" << endl;
+						data[0].first.printHeatmap();
+						cout << "Attempt at Correct Image:" << endl;
+						Grid attemptAtCorrectImage(data[0].first);
+						climber->process(data[0].second, &attemptAtCorrectImage);
+						attemptAtCorrectImage.printHeatmap();
+						cout << "Failures = " << failures << endl;
+						cout << "Error = " << error << endl;
+						for (int i = 0; i < 2000; i++) cout << "*"; cout << endl;
+						climber->save();
 					}
 				}
 			}
