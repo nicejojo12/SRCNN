@@ -25,6 +25,11 @@ class Optimizer {
 				cout << "Failures = " << failures << endl;
 				cout << "Error = " << error << endl;
 				climber->save();
+
+				cout << "Writing to files" << endl;
+				data[0].second.writeToFile("blurry");
+				data[0].first.writeToFile("correct");
+				attemptAtCorrectImage.writeToFile("attempt");
 			}
 			if (error > newError) {
 				error = newError;
@@ -108,6 +113,12 @@ class Optimizer {
 						cout << "Error = " << error << endl;
 						for (int i = 0; i < 2000; i++) cout << "*"; cout << endl;
 						climber->save();
+
+						cout << "Writing to files" << endl;
+						data[0].second.writeToFile("blurry");
+						data[0].first.writeToFile("correct");
+						attemptAtCorrectImage.writeToFile("attempt");
+
 					}
 				}
 			}
