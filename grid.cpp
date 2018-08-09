@@ -1,7 +1,13 @@
 #include <cassert>
+#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
 
 #include "basictypes.h"
 #include "math.h"
+
+
 
 using namespace std;
 
@@ -182,5 +188,66 @@ public:
 			cout << "\n";
 		}
 		cout << endl;
+	}
+
+	void writeToFile(const string& filename) const {
+		FILE *imageFile;
+		imageFile=fopen((filename + ".ppm").c_str(),"wb");
+		if(imageFile==NULL){
+		perror("ERROR: Cannot open output file");
+		exit(EXIT_FAILURE);
+		}
+
+		fprintf(imageFile,"P6\n");	// P6 filetype
+		fprintf(imageFile,"%d %d\n",kWidth,kHeight);	// dimensions
+		fprintf(imageFile,"255\n");
+
+		for (int i = 0; i < size(); i++) {
+			const float value = get(i);
+			const float trimmedValue = max(0.0f, min(1.0f, value));
+			const uint8 pixelValue = (int)(255 * trimmedValue);
+			uint8 pix[] = {pixelValue, pixelValue, pixelValue};
+			fwrite(pix,1,3,imageFile);
+		}
+		fclose(imageFile);
+
+		// // From http://www.cplusplus.com/forum/general/6194/
+		// //   RGB_t data[ height ][ width ]
+
+		// ofstream tgafile( filename.c_str(), ios::binary );
+		// assert(tgafile);
+
+		// int8 header[ 18 ] = { 0 };
+		// header[  2 ] = 1;  // truecolor
+		// header[ 12 ] =  kWidth        & 0xFF;
+		// header[ 13 ] = (kWidth  >> 8) & 0xFF;
+		// header[ 14 ] =  kHeight       & 0xFF;
+		// header[ 15 ] = (kHeight >> 8) & 0xFF;
+		// header[ 16 ] = 24;  // bits per pixel
+
+		// tgafile.write( (const char*)header, 18 );
+
+		// // The image data is stored bottom-to-top, left-to-right
+		// for (int i = 0; i < size(); i++) {
+		// 	const float value = get(i);
+		// 	const float trimmedValue = max(0.0f, min(1.0f, value));
+		// 	const uint8 pixelValue = (int)(255 * trimmedValue);
+		// 	tgafile.put((char)pixelValue);
+		// 	tgafile.put((char)pixelValue);
+		// 	tgafile.put((char)pixelValue);
+		// 	// tgafile.write(&pixelValue, 1);
+		// 	// tgafile.write(&pixelValue, 1);
+		// 	// tgafile.write(&pixelValue, 1);
+		// }
+
+		// // The file footer. This part is totally optional.
+		// static const char footer[ 26 ] =
+		// 	"\0\0\0\0"  // no extension area
+		// 	"\0\0\0\0"  // no developer directory
+		// 	"TRUEVISION-XFILE"  // yep, this is a TGA file
+		// 	".";
+		// tgafile.write( footer, 26 );
+
+		// tgafile.close();
 	}
 };
